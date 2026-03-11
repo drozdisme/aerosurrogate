@@ -1,0 +1,80 @@
+version: "2.0"
+
+targets:
+  integral: [Cl, Cd, Cm, K]
+  field: [Cp]
+
+models:
+  xgboost:
+    n_estimators: 500
+    max_depth: 7
+    learning_rate: 0.03
+    subsample: 0.8
+    colsample_bytree: 0.8
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    random_state: 42
+
+  lightgbm:
+    n_estimators: 500
+    max_depth: 7
+    learning_rate: 0.03
+    subsample: 0.8
+    colsample_bytree: 0.8
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    num_leaves: 63
+    random_state: 42
+
+  mlp:
+    hidden_layers: [256, 128, 64, 32]
+    dropout: 0.1
+    learning_rate: 0.001
+    epochs: 300
+    batch_size: 128
+    patience: 30
+    n_seeds: 5
+    base_seed: 42
+
+  deeponet:
+    branch_layers: [256, 128, 64]
+    trunk_layers: [128, 64, 64]
+    latent_dim: 64
+    learning_rate: 0.0005
+    epochs: 500
+    batch_size: 32
+    patience: 40
+    n_surface_points: 200
+
+ensemble:
+  weights:
+    xgboost: 0.30
+    lightgbm: 0.30
+    mlp: 0.40
+
+uncertainty:
+  variance_weight: 0.5
+  distance_weight: 0.5
+  thresholds:
+    high: 0.7
+    medium: 0.4
+
+training:
+  test_size: 0.15
+  val_size: 0.15
+  random_state: 42
+
+tuning:
+  enabled: false
+  n_trials: 100
+  timeout: 3600
+  metric: mape
+  target: Cl
+
+physics_loss:
+  enabled: true
+  cd_positivity_weight: 1.0
+  cl_monotonicity_weight: 0.5
+  consistency_weight: 0.1
+
+artifacts_dir: artifacts

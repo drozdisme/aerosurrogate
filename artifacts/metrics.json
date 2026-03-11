@@ -1,0 +1,31 @@
+{
+  "Cl_R2": 0.9989,
+  "Cd_R2": 0.9951,
+  "Cm_R2": 0.9992,
+  "MAPE": 154.97,
+  "model_version": "v2",
+  "backend": "sklearn",
+  "n_samples": 60000,
+  "features": [
+    "thickness_ratio",
+    "camber",
+    "camber_position",
+    "leading_edge_radius",
+    "trailing_edge_angle",
+    "aspect_ratio",
+    "taper_ratio",
+    "sweep_angle",
+    "mach",
+    "reynolds",
+    "alpha",
+    "mach_alpha",
+    "alpha2",
+    "alpha3",
+    "log_re",
+    "ar_tr",
+    "tc_ratio",
+    "pg"
+  ],
+  "Cp_R2": 0.9942,
+  "Cp_MAE": 0.0247
+}

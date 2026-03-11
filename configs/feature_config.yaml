@@ -1,0 +1,51 @@
+geometry_2d:
+  - thickness_ratio
+  - camber
+  - camber_position
+  - leading_edge_radius
+  - trailing_edge_angle
+
+geometry_3d:
+  - aspect_ratio
+  - taper_ratio
+  - sweep_angle
+  - twist_angle
+  - dihedral_angle
+
+cst_coefficients:
+  n_upper: 6
+  n_lower: 6
+  # CST columns auto-generated: cst_upper_0..5, cst_lower_0..5
+
+flow_features:
+  - mach
+  - reynolds
+  - alpha
+  - beta
+  - altitude
+
+derived_features:
+  - mach_alpha_interaction
+  - reynolds_log
+  - alpha_squared
+  - alpha_cubed
+  - aspect_ratio_taper_interaction
+  - thickness_camber_ratio
+  - sweep_mach_interaction
+  - compressibility_factor
+  - reduced_frequency
+
+scaling:
+  method: standard
+  clip_outliers: true
+  outlier_std: 4.0
+
+required_columns_min:
+  - mach
+  - reynolds
+  - alpha
+  - Cl
+
+field_features:
+  surface_parameterization: arc_length
+  n_points: 200

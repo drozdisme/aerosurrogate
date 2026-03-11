@@ -1,0 +1,78 @@
+# AeroSurrogate v3.0 — Production Stack
+#
+# Первый старт: ~15-20 мин (генерация датасета + обучение XGBoost)
+# Последующие старты: мгновенно (модели кешированы в volume)
+#
+# Управление скоростью обучения:
+#   N_SAMPLES=30000   — быстрее (~8 мин),  качество чуть ниже
+#   N_SAMPLES=60000   — стандарт (~18 мин), R² > 0.99
+# SKIP_FNO=0 is the default — FNO enabled (full model)
+#
+# Usage:
+#   docker-compose up --build
+
+services:
+
+  # ── MLflow (опциональный трекинг) ────────────────────────────────────────
+  # Не блокирует запуск API — training работает без него (best-effort)
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.12.2
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+        --host 0.0.0.0
+        --port 5000
+        --backend-store-uri sqlite:///mlflow.db
+    volumes:
+      - mlflow_data:/mlflow
+    restart: unless-stopped
+
+  # ── Inference API ──────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      args:
+        SKIP_FNO: ${SKIP_FNO:-0}       # 0 = FNO enabled (full model)
+        N_SAMPLES: ${N_SAMPLES:-60000}
+    ports:
+      - "8000:8000"
+    environment:
+      - MODELS_DIR=models
+      - ARTIFACTS_DIR=artifacts
+      - CONFIG_DIR=configs
+      - SKIP_FNO=${SKIP_FNO:-0}
+      - N_SAMPLES=${N_SAMPLES:-60000}
+      - FNO_PROFILES=${FNO_PROFILES:-3000}
+      - FNO_EPOCHS=${FNO_EPOCHS:-150}
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      # Защита паролем (раскомментировать):
+      # - AERO_API_KEY=your-secret-key
+    volumes:
+      - model_artifacts:/app/artifacts
+      - model_weights:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 3000s   # ~50 min: dataset + XGBoost + FNO
+    restart: unless-stopped
+
+  # ── React UI ───────────────────────────────────────────────────────────────
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mlflow_data:
+  model_artifacts:
+  model_weights:

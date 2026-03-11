@@ -1,0 +1,73 @@
+# ── AeroSurrogate v2.0 — Data Source Registry ───────────────
+# Run: python -m src.data.acquire  to download real datasets.
+# Then set enabled: true on each acquired source below.
+
+sources:
+
+  # ── Auto-downloaded by src.data.acquire ─────────────────────
+  # kanakaero: 2900 airfoils, Cl/Cd, Re=1e5, CST coefficients
+  kanakaero_airfoils:
+    adapter: csv
+    path: data/kanakaero_airfoils.csv
+    enabled: false
+
+  # NASA airfoil-learning: ~1500 profiles, multi-Re, XFoil Cl/Cd/Cm
+  nasa_airfoil_learning:
+    adapter: csv
+    path: data/nasa_airfoil_learning.csv
+    enabled: false
+
+  # GitHub CFD combined (transonic RAE2822 + others)
+  github_cfd_combined:
+    adapter: csv
+    path: data/github_cfd_combined.csv
+    enabled: false
+
+  # ── Manual placement ────────────────────────────────────────
+  # Place SU2 cases in data/su2_cases/ and enable:
+  # su2_cases:
+  #   adapter: su2
+  #   path: data/su2_cases/
+  #   enabled: false
+
+  # Place OpenFOAM cases in data/openfoam_cases/ and enable:
+  # openfoam_cases:
+  #   adapter: openfoam
+  #   path: data/openfoam_cases/
+  #   enabled: false
+
+  # Place AVL .st files in data/avl_runs/ and enable:
+  # avl_runs:
+  #   adapter: vlm
+  #   path: data/avl_runs/
+  #   format: avl
+  #   enabled: false
+
+  # ── Synthetic fallback (5 flow regimes) ─────────────────────
+  synthetic_multi_regime:
+    adapter: synthetic
+    enabled: true
+    n_samples: 10000
+    random_state: 42
+
+  # ── Synthetic Cp-field data for DeepONet ─────────────────────
+  # Generates physics-based Cp(x/c) distributions automatically.
+  # No CFD data required. Replace with a vtk adapter when real
+  # surface field data (OpenFOAM/SU2 VTK output) becomes available
+  # — VTK sources are always preferred over this generator.
+  synthetic_cp_fields:
+    adapter: synthetic_field
+    enabled: true
+    n_samples: 3000
+    n_points: 200
+    random_state: 42
+
+merge:
+  strategy: concatenate
+  deduplicate: true
+  deduplicate_keys: [mach, reynolds, alpha, thickness_ratio]
+
+quality:
+  min_rows_per_source: 10
+  max_nan_fraction: 0.05
+  require_targets: [Cl, Cd]
